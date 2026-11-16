@@ -46,3 +46,6 @@ npm run dev   # http://localhost:3000
 3. Excel/PDF রিপোর্ট ও বাকির তালিকা শেয়ার
 4. bKash/Nagad পেমেন্ট নোট, কুরিয়ার (Pathao/Steadfast) অর্ডার ট্র্যাকিং
 5. Free বনাম Pro প্ল্যান (গ্রাহক সংখ্যা, ক্লাউড ব্যাকআপ)
+
+---
+Deploy: Vercel auto-deploys on every push to main.
