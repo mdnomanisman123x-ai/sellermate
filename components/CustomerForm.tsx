@@ -1,123 +1,83 @@
 "use client";
 import { useState } from "react";
-import { isValidPhone, todayStr } from "@/lib/format";
+import { ErrorBox, Field } from "@/components/ui";
+import { errMsg } from "@/lib/errors";
+import { useI18n } from "@/lib/i18n";
+import { isValidPhone, cleanPhone } from "@/lib/nums";
+import type { Customer } from "@/lib/types";
+import { useWorkspace } from "@/lib/workspace";
 
-export interface CustomerValues {
-  name: string;
-  phone: string;
-  address: string;
-  note: string;
-  followUp: string;
-}
-
-interface Props {
-  initial?: CustomerValues;
-  submitLabel: string;
-  onSubmit: (v: CustomerValues) => void;
-}
-
-export default function CustomerForm({ initial, submitLabel, onSubmit }: Props) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [phone, setPhone] = useState(initial?.phone ?? "");
-  const [address, setAddress] = useState(initial?.address ?? "");
-  const [note, setNote] = useState(initial?.note ?? "");
-  const [followUp, setFollowUp] = useState(initial?.followUp ?? "");
+export default function CustomerForm({ existing, onSaved }: { existing?: Customer; onSaved: () => void }) {
+  const { t } = useI18n();
+  const { supabase, ws } = useWorkspace();
+  const [name, setName] = useState(existing?.name ?? "");
+  const [phone, setPhone] = useState(existing?.phone ?? "");
+  const [address, setAddress] = useState(existing?.address ?? "");
+  const [note, setNote] = useState(existing?.note ?? "");
+  const [segment, setSegment] = useState<Customer["segment"]>(existing?.segment ?? "new");
+  const [isLead, setIsLead] = useState(existing?.is_lead ?? false);
+  const [followUp, setFollowUp] = useState(existing?.follow_up ?? "");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  function submit(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("গ্রাহকের নাম লিখুন।");
-      return;
-    }
-    if (phone.trim() && !isValidPhone(phone)) {
-      setError("ফোন নম্বরটি সঠিক নয়। যেমন: 01712345678");
-      return;
-    }
-    onSubmit({
+    setError("");
+    if (!name.trim()) return setError(t("cust.errName"));
+    if (phone.trim() && !isValidPhone(phone)) return setError(t("cust.errPhone"));
+    setBusy(true);
+    const row = {
       name: name.trim(),
-      phone: phone.trim(),
+      phone: cleanPhone(phone),
       address: address.trim(),
       note: note.trim(),
-      followUp,
-    });
+      segment,
+      is_lead: isLead,
+      follow_up: followUp || null,
+    };
+    const { error: err } = existing
+      ? await supabase.from("customers").update(row).eq("id", existing.id)
+      : await supabase.from("customers").insert({ ...row, workspace_id: ws.id });
+    setBusy(false);
+    if (err) return setError(errMsg(err, t));
+    onSaved();
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <div>
-        <label className="label" htmlFor="cf-name">
-          নাম *
-        </label>
-        <input
-          id="cf-name"
-          className="input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="যেমন: রিনা বেগম"
-          autoComplete="off"
-        />
+    <form onSubmit={save} className="space-y-3" noValidate>
+      <Field label={t("cust.name")} htmlFor="cn">
+        <input id="cn" className="input" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
+      </Field>
+      <Field label={t("cust.phone")} htmlFor="cp">
+        <input id="cp" className="input" inputMode="tel" value={phone} maxLength={30} onChange={(e) => setPhone(e.target.value)} />
+      </Field>
+      <Field label={t("cust.address")} htmlFor="ca">
+        <input id="ca" className="input" value={address} maxLength={300} onChange={(e) => setAddress(e.target.value)} />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("cust.segment")} htmlFor="cs">
+          <select id="cs" className="input" value={segment} onChange={(e) => setSegment(e.target.value as Customer["segment"])}>
+            {(["new", "regular", "vip", "wholesale"] as const).map((s) => (
+              <option key={s} value={s}>
+                {t(`seg.${s}`)}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t("cust.followUp")} htmlFor="cf">
+          <input id="cf" className="input" type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} />
+        </Field>
       </div>
-      <div>
-        <label className="label" htmlFor="cf-phone">
-          মোবাইল নম্বর
-        </label>
-        <input
-          id="cf-phone"
-          className="input"
-          type="tel"
-          inputMode="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="01XXXXXXXXX"
-          autoComplete="off"
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="cf-addr">
-          ঠিকানা
-        </label>
-        <input
-          id="cf-addr"
-          className="input"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="এলাকা / জেলা"
-          autoComplete="off"
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="cf-note">
-          নোট
-        </label>
-        <textarea
-          id="cf-note"
-          className="input min-h-[72px]"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="যেমন: গোল্ড কালার পছন্দ করেন"
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="cf-fu">
-          ফলো-আপের তারিখ (ঐচ্ছিক)
-        </label>
-        <input
-          id="cf-fu"
-          className="input"
-          type="date"
-          min={todayStr()}
-          value={followUp}
-          onChange={(e) => setFollowUp(e.target.value)}
-        />
-      </div>
-      {error && (
-        <div role="alert" className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
-      <button type="submit" className="btn btn-primary w-full">
-        {submitLabel}
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={isLead} onChange={(e) => setIsLead(e.target.checked)} />
+        {t("cust.isLead")}
+      </label>
+      <Field label={t("cust.note")} htmlFor="cno">
+        <textarea id="cno" className="input min-h-[70px]" value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} />
+      </Field>
+      <ErrorBox message={error} />
+      <button type="submit" className="btn btn-primary w-full" disabled={busy}>
+        {busy ? t("common.wait") : t("common.save")}
       </button>
     </form>
   );

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Hind_Siliguri, Noto_Serif_Bengali } from "next/font/google";
+import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
-import { StoreProvider } from "@/lib/store";
-import Shell from "@/components/Shell";
+import { I18nProvider } from "@/lib/i18n";
 
 const body = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -10,31 +9,29 @@ const body = Hind_Siliguri({
   variable: "--font-body",
   display: "swap",
 });
-const display = Noto_Serif_Bengali({
-  subsets: ["bengali", "latin"],
-  variable: "--font-display",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
-  title: "SellerMate — সেলার খাতা",
-  description: "ছোট অনলাইন বিক্রেতাদের জন্য গ্রাহক, বাকি ও ফলো-আপের সহজ খাতা।",
+  title: { default: "SellerMate — Your Smart Business Partner", template: "%s · SellerMate" },
+  description: "Sales, customers, stock, finance and an AI business advisor for small businesses. বাংলা ও English.",
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0E2B25",
+  themeColor: "#0F7B5C",
 };
+
+const themeScript = `(function(){try{var t=localStorage.getItem("sm-theme");var d=t?t==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;if(d)document.documentElement.classList.add("dark")}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bn" className={`${body.variable} ${display.variable}`}>
+    <html lang="bn" suppressHydrationWarning className={body.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
-        <StoreProvider>
-          <Shell>{children}</Shell>
-        </StoreProvider>
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );
