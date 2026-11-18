@@ -82,14 +82,14 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <main className="mx-auto max-w-md px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="hero-surface -mx-4 -mt-8 mb-6 flex items-center justify-between px-4 pb-8 pt-6 text-white">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white dark:text-bg">S</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold text-[#2B1D00]">S</span>
           SellerMate
         </Link>
         <LangToggle />
       </div>
-      <form onSubmit={submit} className="card space-y-4" noValidate>
+      <form onSubmit={submit} className="card relative -mt-6 space-y-4 shadow-xl" noValidate>
         <h1 className="text-2xl font-bold">{isSignup ? t("auth.signup") : t("auth.login")}</h1>
         <Field label={t("auth.email")} htmlFor="email">
           <input

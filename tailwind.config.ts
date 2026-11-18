@@ -17,6 +17,7 @@ const config: Config = {
         danger: v("danger"),
         warn: v("warn"),
         ok: v("ok"),
+        gold: v("gold"),
       },
       fontFamily: {
         sans: ["var(--font-body)", "system-ui", "sans-serif"],

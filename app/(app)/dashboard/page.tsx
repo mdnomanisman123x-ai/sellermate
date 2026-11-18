@@ -44,12 +44,27 @@ export default function Dashboard() {
         />
       )}
 
+      <div className="hero-surface rounded-3xl p-5 shadow-lg">
+        <div className="text-sm text-white/70">{t("dash.todaySales")}</div>
+        <div className="mt-1 break-words text-4xl font-bold tracking-tight text-white">{money(s.todaySales)}</div>
+        <div className="mt-0.5 text-xs text-white/60">{t("dash.ordersN", { n: num(s.todayOrders) })}</div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-white/10 p-3">
+            <div className="text-[11px] text-white/65">{t("dash.monthRevenue")}</div>
+            <div className="text-base font-bold text-white">{money(s.monthRevenue)}</div>
+          </div>
+          {canFinance && (
+            <div className="rounded-2xl bg-white/10 p-3">
+              <div className="text-[11px] text-white/65">{t("dash.netProfit")}</div>
+              <div className={`text-base font-bold ${s.monthNetProfit < 0 ? "text-[#FF9A9A]" : "text-gold"}`}>{money(s.monthNetProfit)}</div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label={t("dash.todaySales")} value={money(s.todaySales)} hint={t("dash.ordersN", { n: num(s.todayOrders) })} />
-        <Stat label={t("dash.monthRevenue")} value={money(s.monthRevenue)} hint={t("dash.ordersN", { n: num(s.monthOrders) })} />
         {canFinance && (
           <>
-            <Stat label={t("dash.netProfit")} value={money(s.monthNetProfit)} tone={s.monthNetProfit < 0 ? "bad" : "good"} />
             <Stat label={t("dash.cash")} value={money(s.cashBalance)} tone={s.cashBalance < 0 ? "bad" : "default"} />
             <Stat label={t("dash.expenses")} value={money(s.monthOpex)} />
             <Stat label={t("dash.receivables")} value={money(s.receivables)} hint={t("dash.countN", { n: num(s.receivableCount) })} />

@@ -21,7 +21,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("sm-lang");
+      const saved = localStorage.getItem("sm-lang-v2");
       if (saved === "en" || saved === "bn") setLangState(saved);
     } catch {
       /* storage blocked: keep default */
@@ -35,7 +35,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     try {
-      localStorage.setItem("sm-lang", l);
+      localStorage.setItem("sm-lang-v2", l);
     } catch {
       /* ignore */
     }
